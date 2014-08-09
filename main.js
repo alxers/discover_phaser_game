@@ -5,6 +5,7 @@ var mainState = {
         game.load.image('player', 'assets/player.png');
         game.load.image('wallV', 'assets/wallVertical.png');
         game.load.image('wallH', 'assets/wallHorizontal.png');
+        game.load.image('coin', 'assets/coin.png');
     },
     
     create: function () {
@@ -22,13 +23,25 @@ var mainState = {
         
         // Create world
         this.createWorld();
+        
+        // Add coin
+        this.coin = game.add.sprite(60, 140, 'coin');
+        game.physics.arcade.enable(this.coin);
+        this.coin.anchor.setTo(0.5, 0.5);
+        
+        // Add text
+        this.scoreLabel = game.add.text(30, 30, 'score: 0',
+                                        { font: '14px Arial', fill: '#ffffff' });
+        this.score = 0;
     },
     
     update: function () {
         // Player and walls should collide
         game.physics.arcade.collide(this.player, this.walls);
+        game.physics.arcade.overlap(this.player, this.coin, this.takeCoin, null, this);
         
         this.movePlayer();
+        
         if (!this.player.inWorld) {
             this.playerDie();
         }
@@ -75,6 +88,24 @@ var mainState = {
     
     playerDie: function () {
         game.state.start('main');
+    },
+    
+    takeCoin: function (player, coin) {
+        this.score += 5;
+        this.scoreLabel.text = 'score: ' + this.score;
+        this.updateCoinPosition();
+    },
+    
+    updateCoinPosition: function () {
+        var coinPosition = [
+            {x: 140, y: 60}, {x: 360, y:60}, // Top row
+            {x: 60, y: 140}, {x: 440, y:140}, // Middle row
+            {x: 130, y: 300}, {x: 370, y:300}, // Bottom row
+        ];
+            
+        var newPosition = coinPosition[game.rnd.integerInRange(0, coinPosition.length-1)];
+        
+        this.coin.reset(newPosition.x, newPosition.y);
     }
 };
 
